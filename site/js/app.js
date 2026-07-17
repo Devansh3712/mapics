@@ -9,20 +9,25 @@
 const THUMBNAIL_ZOOM = 13; // at/above this zoom, individual pins show as photo thumbnails
 const DATA_URL = "data.json";
 
+// India-only bounds — photos are all from India, so lock the map there.
+const INDIA_BOUNDS = L.latLngBounds([6.4, 68.0], [37.6, 97.5]);
+
 const map = L.map("map", {
   zoomControl: true,
-  worldCopyJump: true,
-  minZoom: 2,
+  minZoom: 4,
+  maxBounds: INDIA_BOUNDS,
+  maxBoundsViscosity: 1.0, // firmly resist panning outside India
 });
 
 L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
   maxZoom: 19,
+  bounds: INDIA_BOUNDS,
   attribution:
     '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
 }).addTo(map);
 
-// Sensible default view (whole world) until data loads.
-map.setView([20, 0], 2);
+// Default view: all of India until photo data loads.
+map.fitBounds(INDIA_BOUNDS);
 
 // ---- Polaroid modal ---------------------------------------------------------
 
@@ -30,6 +35,7 @@ const overlay = document.getElementById("polaroid-overlay");
 const polaroidPhoto = document.getElementById("polaroid-photo");
 const polaroidMessage = document.getElementById("polaroid-message");
 const polaroidMeta = document.getElementById("polaroid-meta");
+const polaroidSong = document.getElementById("polaroid-song");
 
 function formatMeta(photo) {
   const parts = [];
@@ -45,11 +51,60 @@ function formatMeta(photo) {
   return parts.join(" · ");
 }
 
+/**
+ * Build an embeddable player for a song URL.
+ * Supports Spotify (track/album/playlist/episode) and YouTube / YouTube Music as
+ * inline iframes; anything else falls back to a "Listen" link.
+ * Returns an HTML string, or "" if no usable URL.
+ */
+function renderSong(url) {
+  if (!url) return "";
+  let u;
+  try {
+    u = new URL(url);
+  } catch {
+    return "";
+  }
+  const host = u.hostname.replace(/^www\./, "");
+
+  // Spotify → compact embed player
+  if (host === "open.spotify.com") {
+    const m = u.pathname.match(/\/(track|album|playlist|episode|artist)\/([A-Za-z0-9]+)/);
+    if (m) {
+      const src = `https://open.spotify.com/embed/${m[1]}/${m[2]}`;
+      return `<iframe class="song-embed song-spotify" src="${src}" width="100%" height="80"
+        frameborder="0" loading="lazy" allow="encrypted-media; clipboard-write"></iframe>`;
+    }
+  }
+
+  // YouTube / YouTube Music → embed player
+  let ytId = null;
+  if (host === "youtu.be") {
+    ytId = u.pathname.slice(1);
+  } else if (host === "youtube.com" || host === "m.youtube.com" || host === "music.youtube.com") {
+    ytId = u.searchParams.get("v");
+  }
+  if (ytId) {
+    const src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(ytId)}`;
+    return `<iframe class="song-embed song-youtube" src="${src}" width="100%" height="80"
+      frameborder="0" loading="lazy"
+      allow="encrypted-media; picture-in-picture" allowfullscreen></iframe>`;
+  }
+
+  // Fallback: a plain link
+  return `<a class="song-link" href="${u.href}" target="_blank" rel="noopener noreferrer">🎵 Listen</a>`;
+}
+
 function openPolaroid(photo) {
   polaroidPhoto.src = photo.full;
   polaroidPhoto.alt = photo.caption || photo.file;
   polaroidMessage.textContent = photo.caption || "";
   polaroidMeta.textContent = formatMeta(photo);
+
+  const songHtml = renderSong(photo.song);
+  polaroidSong.innerHTML = songHtml;
+  polaroidSong.classList.toggle("hidden", !songHtml);
+
   overlay.classList.remove("hidden");
   // Trigger the entrance animation.
   requestAnimationFrame(() => overlay.classList.add("visible"));
@@ -62,6 +117,7 @@ function closePolaroid() {
     () => {
       overlay.classList.add("hidden");
       polaroidPhoto.src = "";
+      polaroidSong.innerHTML = ""; // stop any playing embed
     },
     { once: true }
   );
@@ -90,9 +146,10 @@ function makeThumbIcon(photo) {
 function makeDotIcon() {
   return L.divIcon({
     className: "photo-dot",
-    html: '<span class="photo-dot-inner"></span>',
-    iconSize: [16, 16],
-    iconAnchor: [8, 8],
+    html: '<span class="photo-dot-pin"></span>',
+    iconSize: [30, 40],
+    iconAnchor: [15, 38], // tip of the teardrop
+    popupAnchor: [0, -36],
   });
 }
 

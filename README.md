@@ -4,10 +4,12 @@ An interactive webpage that places your photos on a map based on where they were
 taken (their GPS coordinates), and opens each one as a **polaroid** with a
 hand-written caption when clicked.
 
-- 🗺️ **Leaflet + OpenStreetMap** — free, no API key.
-- 📍 **Smart pins** — clustered dots when zoomed out; photo thumbnails as you zoom in.
+- 🗺️ **Leaflet + OpenStreetMap** — free, no API key. Locked to India.
+- 📍 **Smart pins** — teardrop pins when zoomed out; photo thumbnails as you zoom in.
 - 🖼️ **Polaroid view** — click a pin to see the full photo + your message.
-- 📱 **iOS HEIC support** — GPS is read straight from the EXIF of iPhone photos.
+- 🎵 **Optional songs** — attach a Spotify / YouTube link that plays on the polaroid.
+- 📱 **iOS HEIC support** — GPS is read straight from the EXIF of iPhone photos
+  (including newer iPhone 16 Pro HEICs).
 - 🚀 **GitHub Pages ready** — the site is a static folder.
 
 ---
@@ -38,14 +40,23 @@ npm install
 1. **Add photos.** Drop your geotagged iPhone `.HEIC` photos into `assets/`.
    (Regular `.jpg/.png/.webp` with GPS EXIF work too.)
 
-2. **Write captions.** Edit `captions.json`, keyed by the exact filename:
+2. **Write captions (and optional songs).** Edit `captions.json`, keyed by the
+   exact filename. Each entry is either a plain message string, or an object with
+   a `caption` and an optional `song` link:
 
    ```json
    {
      "IMG_0001.HEIC": "Sunrise over the harbour — worth the 5am alarm.",
-     "IMG_0002.HEIC": "That little café we kept coming back to."
+     "IMG_0002.HEIC": {
+       "caption": "That little café we kept coming back to.",
+       "song": "https://open.spotify.com/track/3n3Ppam7vgaVa1iaRUc9Lp"
+     }
    }
    ```
+
+   The `song` link is shown on the polaroid. **Spotify** (track/album/playlist/
+   episode) and **YouTube / YouTube Music** links render as an inline player;
+   any other link shows a “🎵 Listen” button.
 
    Photos without an entry simply get a blank message.
 
@@ -92,6 +103,8 @@ mapics/
 ## Tuning
 
 - **When thumbnails appear:** change `THUMBNAIL_ZOOM` in `site/js/app.js`.
+- **Map region:** the map is locked to India via `INDIA_BOUNDS` in `site/js/app.js`.
+  Change those coordinates (or remove `maxBounds`) to cover a different area.
 - **Image sizes / quality:** change `FULL_MAX`, `THUMB_MAX`, `JPEG_QUALITY` in
   `scripts/build.js`.
 

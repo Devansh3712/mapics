@@ -1,1 +1,68 @@
-[]
+[
+  {
+    "id": "img_2773",
+    "file": "IMG_2773.HEIC",
+    "lat": 25.464158333333334,
+    "lng": 91.79992777777778,
+    "date": "2026-06-08T09:43:48.000Z",
+    "caption": "",
+    "song": null,
+    "full": "photos/img_2773.jpg",
+    "thumb": "photos/img_2773_thumb.jpg"
+  },
+  {
+    "id": "img_2904",
+    "file": "IMG_2904.heic",
+    "lat": 25.291644444444447,
+    "lng": 91.67810833333334,
+    "date": "2026-06-09T10:51:50.000Z",
+    "caption": "",
+    "song": null,
+    "full": "photos/img_2904.jpg",
+    "thumb": "photos/img_2904_thumb.jpg"
+  },
+  {
+    "id": "img_3022",
+    "file": "IMG_3022.HEIC",
+    "lat": 25.31986111111111,
+    "lng": 91.69613611111112,
+    "date": "2026-06-10T06:37:46.000Z",
+    "caption": "",
+    "song": null,
+    "full": "photos/img_3022.jpg",
+    "thumb": "photos/img_3022_thumb.jpg"
+  },
+  {
+    "id": "img_3148",
+    "file": "IMG_3148.HEIC",
+    "lat": 27.594791666666666,
+    "lng": 91.87278611111111,
+    "date": "2026-06-13T13:29:22.000Z",
+    "caption": "",
+    "song": null,
+    "full": "photos/img_3148.jpg",
+    "thumb": "photos/img_3148_thumb.jpg"
+  },
+  {
+    "id": "img_3234",
+    "file": "IMG_3234.HEIC",
+    "lat": 27.72066111111111,
+    "lng": 91.89199722222223,
+    "date": "2026-06-14T07:27:42.000Z",
+    "caption": "",
+    "song": null,
+    "full": "photos/img_3234.jpg",
+    "thumb": "photos/img_3234_thumb.jpg"
+  },
+  {
+    "id": "img_3442",
+    "file": "IMG_3442.HEIC",
+    "lat": 26.198683333333335,
+    "lng": 91.77539166666666,
+    "date": "2026-06-17T11:18:43.000Z",
+    "caption": "Somewhere in Guwahati.",
+    "song": "https://open.spotify.com/track/3n3Ppam7vgaVa1iaRUc9Lp",
+    "full": "photos/img_3442.jpg",
+    "thumb": "photos/img_3442_thumb.jpg"
+  }
+]

@@ -65,25 +65,84 @@ async function loadCaptions() {
   }
 }
 
-/** Return a decoded image buffer (JPEG-ish) that sharp can process. */
+/**
+ * A captions.json entry may be either:
+ *   "IMG_1.HEIC": "just a message"
+ * or an object with an optional song link:
+ *   "IMG_2.HEIC": { "caption": "message", "song": "https://open.spotify.com/track/..." }
+ */
+function normalizeCaptionEntry(entry) {
+  if (!entry) return { caption: "", song: null };
+  if (typeof entry === "string") return { caption: entry, song: null };
+  if (typeof entry === "object") {
+    return {
+      caption: typeof entry.caption === "string" ? entry.caption : "",
+      song: typeof entry.song === "string" && entry.song.trim() ? entry.song.trim() : null,
+    };
+  }
+  return { caption: "", song: null };
+}
+
+/** Return a decoded image buffer (JPEG) that sharp can process. */
 async function toProcessableBuffer(filePath, ext, inputBuffer) {
   if (HEIC_EXTS.has(ext)) {
-    // Prefer sharp if it was compiled with HEIF support; otherwise fall back to
-    // the pure-JS heic-convert (slower but dependency-free).
+    // sharp can only decode HEIC if libvips was built with an HEVC decode plugin,
+    // which is often missing (e.g. macOS Homebrew builds). Rather than probe (its
+    // metadata() lies — it succeeds then fails at pixel-decode time), decode with
+    // the pure-JS/wasm heic-convert, which has no native plugin dependency and
+    // handles newer iPhone gain-map HEICs. Then hand the JPEG to sharp for resizing.
     try {
-      // Probing metadata throws if HEIF support is missing.
-      await sharp(inputBuffer).metadata();
-      return inputBuffer; // sharp can handle it directly
-    } catch {
-      const out = await heicConvert({
-        buffer: inputBuffer,
-        format: "JPEG",
-        quality: 0.92,
-      });
+      const out = await heicConvert({ buffer: inputBuffer, format: "JPEG", quality: 0.92 });
       return Buffer.from(out);
+    } catch (err) {
+      // Last resort: let sharp try directly (works if the HEVC plugin IS present).
+      await sharp(inputBuffer).metadata();
+      return inputBuffer;
     }
   }
   return inputBuffer;
+}
+
+/**
+ * Robust EXIF read.
+ *
+ * exifr's high-level HEIC container parser fails ("Unknown file format") on some
+ * newer iPhone HEICs (e.g. iPhone 16 Pro, which use a `tmap` gain-map brand),
+ * even though a standard TIFF/EXIF block is embedded inside. When the normal
+ * parse yields no GPS, we scan the raw bytes for a TIFF header (II*\0 / MM\0*)
+ * and parse that sub-buffer directly — recovering the GPS + date.
+ */
+async function readExif(inputBuffer) {
+  // NOTE: do NOT use `pick` here — `latitude`/`longitude` are computed fields
+  // that get filtered out by `pick`, leaving photos wrongly marked as ungeotagged.
+  let meta = await exifr
+    .parse(inputBuffer, { gps: true, tiff: true, exif: true })
+    .catch(() => null);
+
+  if (extractLatLng(meta)) return meta;
+
+  // Fallback: locate an embedded TIFF/EXIF block and parse it directly.
+  const off = findTiffHeaderOffset(inputBuffer);
+  if (off < 0) return meta;
+  const sub = inputBuffer.subarray(off);
+  const fallback = await exifr
+    .parse(sub, { gps: true, tiff: true, exif: true, ifd0: true })
+    .catch(() => null);
+
+  return extractLatLng(fallback) ? fallback : meta;
+}
+
+/** Find the byte offset of the first TIFF header (little- or big-endian), or -1. */
+function findTiffHeaderOffset(buf) {
+  for (let i = 0; i < buf.length - 4; i++) {
+    if (
+      (buf[i] === 0x49 && buf[i + 1] === 0x49 && buf[i + 2] === 0x2a && buf[i + 3] === 0x00) ||
+      (buf[i] === 0x4d && buf[i + 1] === 0x4d && buf[i + 2] === 0x00 && buf[i + 3] === 0x2a)
+    ) {
+      return i;
+    }
+  }
+  return -1;
 }
 
 function extractLatLng(gps) {
@@ -120,14 +179,8 @@ async function main() {
     try {
       const inputBuffer = await readFile(filePath);
 
-      // 1. EXIF: GPS + date. exifr reads HEIC EXIF directly.
-      // NOTE: do NOT use `pick` here — `latitude`/`longitude` are computed fields
-      // that get filtered out by `pick`, leaving photos wrongly marked as ungeotagged.
-      const meta = await exifr.parse(inputBuffer, {
-        gps: true,
-        tiff: true,
-        exif: true,
-      }).catch(() => null);
+      // 1. EXIF: GPS + date (with fallback for newer iPhone HEICs).
+      const meta = await readExif(inputBuffer);
 
       const coords = extractLatLng(meta);
       if (!coords) {
@@ -163,7 +216,8 @@ async function main() {
         .toFile(path.join(PHOTOS_OUT, thumbName));
 
       const date = meta?.DateTimeOriginal || meta?.CreateDate || null;
-      const caption = captions.get?.(file.toLowerCase()) ?? "";
+      const entry = captions.get?.(file.toLowerCase());
+      const { caption, song } = normalizeCaptionEntry(entry);
 
       results.push({
         id: slug,
@@ -172,6 +226,7 @@ async function main() {
         lng: coords.lng,
         date: date ? new Date(date).toISOString() : null,
         caption,
+        song,
         full: `photos/${fullName}`,
         thumb: `photos/${thumbName}`,
       });

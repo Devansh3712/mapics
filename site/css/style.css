@@ -84,17 +84,33 @@ html, body {
 }
 .photo-pin:hover .photo-pin-inner { transform: scale(1.12); z-index: 1000; }
 
-/* ---- Dot pin (zoomed out) ---- */
+/* ---- Teardrop pin (zoomed out) ---- */
 .photo-dot { background: transparent; border: none; }
-.photo-dot-inner {
+.photo-dot-pin {
   display: block;
-  width: 16px;
-  height: 16px;
+  width: 26px;
+  height: 26px;
   background: var(--accent);
-  border: 2px solid #fff;
-  border-radius: 50%;
-  box-shadow: 0 1px 4px var(--shadow);
+  border: 3px solid #fff;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  box-shadow: 0 3px 8px var(--shadow);
+  position: relative;
+  transition: transform 0.15s ease;
 }
+.photo-dot-pin::after {
+  /* inner dot for a classic map-pin look */
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 9px;
+  height: 9px;
+  margin: -4.5px 0 0 -4.5px;
+  background: #fff;
+  border-radius: 50%;
+}
+.photo-dot:hover .photo-dot-pin { transform: rotate(-45deg) scale(1.15); }
 
 /* ---- Cluster ---- */
 .photo-cluster { background: transparent; }
@@ -172,6 +188,31 @@ html, body {
   color: #999;
   letter-spacing: 0.3px;
 }
+
+/* ---- Song embed / link on the polaroid ---- */
+#polaroid-song {
+  margin: 4px auto 12px;
+  max-width: 340px;
+}
+.song-embed {
+  display: block;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.song-youtube { height: 160px; }
+.song-link {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 7px 16px;
+  background: var(--accent);
+  color: #fff;
+  text-decoration: none;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  box-shadow: 0 3px 8px var(--shadow);
+}
+.song-link:hover { filter: brightness(1.05); }
 
 #polaroid-close {
   position: absolute;
