@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <title>mapics — a map of memories</title>
+  <meta name="description" content="Photos placed on a map by where they were taken." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%8D%3C/text%3E%3C/svg%3E" />
+
+  <!-- Leaflet -->
+  <link rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+        crossorigin="" />
+  <!-- Leaflet.markercluster -->
+  <link rel="stylesheet"
+        href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+  <link rel="stylesheet"
+        href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div id="map" aria-label="Map of geotagged photos"></div>
+
+  <header id="titlebar">
+    <h1>mapics</h1>
+    <p>a map of memories</p>
+  </header>
+
+  <!-- Empty state, shown when no photos are available -->
+  <div id="empty-state" class="hidden">
+    <div class="empty-card">
+      <h2>No photos yet</h2>
+      <p>Drop geotagged <strong>HEIC</strong> photos into <code>assets/</code>,
+         edit <code>captions.json</code>, then run <code>npm&nbsp;run&nbsp;build</code>.</p>
+    </div>
+  </div>
+
+  <!-- Polaroid modal -->
+  <div id="polaroid-overlay" class="hidden" role="dialog" aria-modal="true" aria-label="Photo">
+    <div id="polaroid" class="polaroid">
+      <button id="polaroid-close" aria-label="Close">&times;</button>
+      <div class="polaroid-photo-wrap">
+        <img id="polaroid-photo" alt="" />
+      </div>
+      <div class="polaroid-caption">
+        <p id="polaroid-message"></p>
+        <span id="polaroid-meta"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+          crossorigin=""></script>
+  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
