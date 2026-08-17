@@ -176,8 +176,7 @@ Expected: both commands exit successfully.
 
 ```bash
 git add scripts/build.js site/data.json site/photos
-git commit -m "feat: support manual photo coordinates" \
-  -m "Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>"
+git commit -m "feat: support manual photo coordinates"
 ```
 
 Only stage generated files if the build actually changed them.
@@ -244,8 +243,7 @@ errors.
 
 ```bash
 git add README.md
-git commit -m "docs: explain manual photo coordinates" \
-  -m "Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>"
+git commit -m "docs: explain manual photo coordinates"
 ```
 
 ### Task 3: Validate valid and invalid coordinate scenarios
