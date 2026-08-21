@@ -1,5 +1,38 @@
 [
   {
+    "id": "img_4639",
+    "file": "IMG_4639.jpeg",
+    "lat": 30.261782,
+    "lng": 77.999212,
+    "date": null,
+    "caption": "happy two months <3",
+    "song": null,
+    "full": "photos/img_4639.jpg",
+    "thumb": "photos/img_4639_thumb.jpg"
+  },
+  {
+    "id": "img_4749",
+    "file": "IMG_4749.jpeg",
+    "lat": 30.456286,
+    "lng": 78.077527,
+    "date": null,
+    "caption": "cheers to mid food",
+    "song": null,
+    "full": "photos/img_4749.jpg",
+    "thumb": "photos/img_4749_thumb.jpg"
+  },
+  {
+    "id": "img_5193",
+    "file": "IMG_5193.jpeg",
+    "lat": 30.458199,
+    "lng": 78.101838,
+    "date": null,
+    "caption": "love your smile so much",
+    "song": null,
+    "full": "photos/img_5193.jpg",
+    "thumb": "photos/img_5193_thumb.jpg"
+  },
+  {
     "id": "img_2773",
     "file": "IMG_2773.HEIC",
     "lat": 25.464158333333334,
@@ -64,5 +97,49 @@
     "song": "https://open.spotify.com/track/2AnT5iXM8ET5kiqBuE8Mpi?si=425b439c5a2a45ed",
     "full": "photos/img_3442.jpg",
     "thumb": "photos/img_3442_thumb.jpg"
+  },
+  {
+    "id": "img_4378",
+    "file": "IMG_4378.jpeg",
+    "lat": 27.175386111111113,
+    "lng": 78.04107777777777,
+    "date": "2026-08-10T00:41:43.000Z",
+    "caption": "u da real taj mahal",
+    "song": "https://open.spotify.com/track/4J5OpeZUR2msDPfMsIeGSU?si=fef71ad3f94f4e18",
+    "full": "photos/img_4378.jpg",
+    "thumb": "photos/img_4378_thumb.jpg"
+  },
+  {
+    "id": "img_4402",
+    "file": "IMG_4402.HEIC",
+    "lat": 28.52135277777778,
+    "lng": 77.20577222222222,
+    "date": "2026-08-11T14:53:46.000Z",
+    "caption": "didn't sleep during odyssey btw",
+    "song": null,
+    "full": "photos/img_4402.jpg",
+    "thumb": "photos/img_4402_thumb.jpg"
+  },
+  {
+    "id": "img_4532",
+    "file": "IMG_4532.HEIC",
+    "lat": 30.44723611111111,
+    "lng": 78.04831666666666,
+    "date": "2026-08-12T08:44:14.000Z",
+    "caption": "babygirl",
+    "song": null,
+    "full": "photos/img_4532.jpg",
+    "thumb": "photos/img_4532_thumb.jpg"
+  },
+  {
+    "id": "img_4694",
+    "file": "IMG_4694.HEIC",
+    "lat": 30.47517222222222,
+    "lng": 78.03762777777777,
+    "date": "2026-08-13T10:00:34.000Z",
+    "caption": "mota aalu",
+    "song": null,
+    "full": "photos/img_4694.jpg",
+    "thumb": "photos/img_4694_thumb.jpg"
   }
 ]
