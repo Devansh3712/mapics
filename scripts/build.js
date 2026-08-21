@@ -2,16 +2,18 @@
  * mapics build step.
  *
  * Scans ./assets for photos (HEIC/HEIF, and also JPG/PNG if you drop those in),
- * extracts GPS coordinates + capture date from EXIF, converts each photo into a
- * web-friendly full-size JPEG plus a small thumbnail, merges in your hand-written
- * captions from ./captions.json, and writes:
+ * locates each one from either manual `latitude`/`longitude` values in
+ * ./captions.json or from its GPS EXIF (which also supplies the capture date),
+ * converts each photo into a web-friendly full-size JPEG plus a small thumbnail,
+ * merges in your hand-written captions from ./captions.json, and writes:
  *
  *   site/data.json      -> array consumed by the frontend
  *   site/photos/*.jpg   -> converted full images + thumbnails
  *
  * Run with:  npm run build
  *
- * Photos without GPS data are skipped with a warning (they can't be placed on a map).
+ * Photos with neither manual coordinates nor GPS EXIF are skipped with a warning
+ * (they can't be placed on a map), as are photos with invalid manual coordinates.
  */
 
 import { readdir, readFile, writeFile, mkdir, rm } from "node:fs/promises";
@@ -81,6 +83,62 @@ function normalizeCaptionEntry(entry) {
     };
   }
   return { caption: "", song: null };
+}
+
+/**
+ * A captions.json entry may also pin a photo to a location manually:
+ *   "scan.jpg": { "caption": "message", "latitude": 25.4, "longitude": 91.8 }
+ *
+ * Both fields are required together and must be finite JSON numbers in range.
+ * Returns { status: "absent" | "invalid" | "valid" }.
+ */
+function parseManualCoordinates(entry) {
+  if (!entry || typeof entry !== "object" || Array.isArray(entry)) {
+    return { status: "absent" };
+  }
+
+  const hasLatitude = Object.hasOwn(entry, "latitude");
+  const hasLongitude = Object.hasOwn(entry, "longitude");
+
+  if (!hasLatitude && !hasLongitude) {
+    return { status: "absent" };
+  }
+  if (!hasLatitude || !hasLongitude) {
+    return {
+      status: "invalid",
+      reason: '"latitude" and "longitude" must be provided together',
+    };
+  }
+
+  const { latitude, longitude } = entry;
+  if (
+    typeof latitude !== "number" ||
+    !Number.isFinite(latitude) ||
+    typeof longitude !== "number" ||
+    !Number.isFinite(longitude)
+  ) {
+    return {
+      status: "invalid",
+      reason: '"latitude" and "longitude" must be finite JSON numbers',
+    };
+  }
+  if (latitude < -90 || latitude > 90) {
+    return {
+      status: "invalid",
+      reason: '"latitude" must be between -90 and 90',
+    };
+  }
+  if (longitude < -180 || longitude > 180) {
+    return {
+      status: "invalid",
+      reason: '"longitude" must be between -180 and 180',
+    };
+  }
+
+  return {
+    status: "valid",
+    coordinates: { lat: latitude, lng: longitude },
+  };
 }
 
 /** Return a decoded image buffer (JPEG) that sharp can process. */
@@ -179,12 +237,34 @@ async function main() {
     try {
       const inputBuffer = await readFile(filePath);
 
-      // 1. EXIF: GPS + date (with fallback for newer iPhone HEICs).
-      const meta = await readExif(inputBuffer);
+      const entry = captions.get?.(file.toLowerCase());
+      const { caption, song } = normalizeCaptionEntry(entry);
+      const manualLocation = parseManualCoordinates(entry);
 
-      const coords = extractLatLng(meta);
+      if (manualLocation.status === "invalid") {
+        console.warn(
+          `⚠  Skipping "${file}" — invalid manual coordinates: ${manualLocation.reason}.`
+        );
+        skipped++;
+        continue;
+      }
+
+      // 1. Location: manual coordinates from captions.json, else GPS from EXIF
+      //    (with fallback for newer iPhone HEICs). EXIF also supplies the date.
+      let meta = null;
+      let coords;
+
+      if (manualLocation.status === "valid") {
+        coords = manualLocation.coordinates;
+      } else {
+        meta = await readExif(inputBuffer);
+        coords = extractLatLng(meta);
+      }
+
       if (!coords) {
-        console.warn(`⚠  Skipping "${file}" — no GPS coordinates in EXIF.`);
+        console.warn(
+          `⚠  Skipping "${file}" — no manual coordinates in captions.json or GPS coordinates in EXIF.`
+        );
         skipped++;
         continue;
       }
@@ -216,8 +296,6 @@ async function main() {
         .toFile(path.join(PHOTOS_OUT, thumbName));
 
       const date = meta?.DateTimeOriginal || meta?.CreateDate || null;
-      const entry = captions.get?.(file.toLowerCase());
-      const { caption, song } = normalizeCaptionEntry(entry);
 
       results.push({
         id: slug,
@@ -231,7 +309,10 @@ async function main() {
         thumb: `photos/${thumbName}`,
       });
 
-      console.log(`✔  ${file} → (${coords.lat.toFixed(5)}, ${coords.lng.toFixed(5)})`);
+      const locationSource = manualLocation.status === "valid" ? "captions.json" : "EXIF";
+      console.log(
+        `✔  ${file} → (${coords.lat.toFixed(5)}, ${coords.lng.toFixed(5)}) [${locationSource}]`
+      );
     } catch (err) {
       console.error(`✖  Error processing "${file}":`, err.message);
       skipped++;
@@ -248,7 +329,8 @@ async function main() {
   console.log(`→ ${path.relative(ROOT, DATA_OUT)}`);
   if (results.length === 0) {
     console.log("");
-    console.log("No geotagged photos found. Drop HEIC photos into assets/ and re-run.");
+    console.log("No mappable photos found. Drop photos into assets/ and re-run —");
+    console.log("each one needs GPS EXIF or manual coordinates in captions.json.");
     console.log("The site will show a friendly empty state until then.");
   }
 }
