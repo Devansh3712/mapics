@@ -9,25 +9,47 @@
 const THUMBNAIL_ZOOM = 13; // at/above this zoom, individual pins show as photo thumbnails
 const DATA_URL = "data.json";
 
-// India-only bounds — photos are all from India, so lock the map there.
-const INDIA_BOUNDS = L.latLngBounds([6.4, 68.0], [37.6, 97.5]);
+// Whole-world bounds — the map covers the entire globe, clamped to the Web
+// Mercator latitude limits and to a single (non-repeating) world copy so
+// zooming out stays consistent instead of tiling endlessly sideways.
+const WORLD_BOUNDS = L.latLngBounds([-85.05, -180], [85.05, 180]);
 
 const map = L.map("map", {
   zoomControl: true,
-  minZoom: 4,
-  maxBounds: INDIA_BOUNDS,
-  maxBoundsViscosity: 1.0, // firmly resist panning outside India
+  maxBounds: WORLD_BOUNDS,
+  maxBoundsViscosity: 1.0, // firmly resist panning off the world
 });
 
 L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
   maxZoom: 19,
-  bounds: INDIA_BOUNDS,
+  noWrap: true,
+  bounds: WORLD_BOUNDS,
   attribution:
     '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
 }).addTo(map);
 
-// Default view: all of India until photo data loads.
-map.fitBounds(INDIA_BOUNDS);
+/**
+ * Smallest zoom at which one (non-repeating) world still covers the whole
+ * viewport. Below it the map background would show through as empty bands on
+ * the sides — so this becomes the map's minZoom and is re-applied on resize.
+ */
+function worldFillZoom() {
+  const size = map.getSize();
+  const worldPx = map.options.crs.scale(0); // world width/height in px at zoom 0
+  return Math.ceil(Math.log2(Math.max(size.x, size.y) / worldPx));
+}
+
+function applyWorldFillZoom() {
+  const min = Math.max(0, worldFillZoom());
+  map.setMinZoom(min);
+  if (map.getZoom() < min) map.setZoom(min);
+}
+
+applyWorldFillZoom();
+map.on("resize", applyWorldFillZoom);
+
+// Default view: the whole world until photo data loads.
+map.fitWorld();
 
 // ---- Polaroid modal ---------------------------------------------------------
 
