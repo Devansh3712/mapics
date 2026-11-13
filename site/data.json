@@ -33,6 +33,28 @@
     "thumb": "photos/img_5193_thumb.jpg"
   },
   {
+    "id": "img_5958",
+    "file": "IMG_5958.jpeg",
+    "lat": 28.561132,
+    "lng": 77.193837,
+    "date": null,
+    "caption": "it is a crime to be this bful",
+    "song": null,
+    "full": "photos/img_5958.jpg",
+    "thumb": "photos/img_5958_thumb.jpg"
+  },
+  {
+    "id": "img_5959",
+    "file": "IMG_5959.JPEG",
+    "lat": 28.559307,
+    "lng": 77.163777,
+    "date": null,
+    "caption": "yum pizza w the yummiest girl",
+    "song": null,
+    "full": "photos/img_5959.jpg",
+    "thumb": "photos/img_5959_thumb.jpg"
+  },
+  {
     "id": "img_2773",
     "file": "IMG_2773.HEIC",
     "lat": 25.464158333333334,
