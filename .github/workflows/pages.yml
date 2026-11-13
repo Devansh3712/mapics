@@ -1,12 +1,13 @@
 name: Deploy to GitHub Pages
 
-# Publishes the contents of ./site to GitHub Pages on every push to main.
+# Publishes the contents of ./site to GitHub Pages (manual trigger only).
+# Pages is currently served via "Deploy from a branch" (main, / root): the root
+# index.html redirects to ./site/. To use this workflow instead, set
+# Settings -> Pages -> Source to "GitHub Actions" and re-add the push trigger.
 # NOTE: run `npm run build` locally and commit site/data.json + site/photos/
 # before pushing — this workflow only deploys the already-generated static files.
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:

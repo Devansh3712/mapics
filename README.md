@@ -96,10 +96,14 @@ npm install
    ```
 
 5. **Publish.** Commit everything (including `site/data.json` and `site/photos/`)
-   and push to `main`. The included GitHub Actions workflow deploys `site/` to
-   GitHub Pages.
+   and push to `main`. GitHub Pages serves the repo root, where `index.html`
+   redirects to `site/` (a root `.nojekyll` disables Jekyll processing).
 
-   In your repo: **Settings → Pages → Build and deployment → Source: GitHub Actions.**
+   In your repo: **Settings → Pages → Build and deployment → Source: Deploy from a
+   branch → `main` / `(root)`.** No GitHub Actions minutes are needed.
+
+   Alternatively, set the source to **GitHub Actions** and run the manual
+   `Deploy to GitHub Pages` workflow (requires Actions to be available on your account).
 
 ---
 
@@ -107,6 +111,7 @@ npm install
 
 ```
 mapics/
+├── index.html           # redirects the Pages root to site/
 ├── assets/              # your original photos (HEICs git-ignored by default)
 ├── captions.json        # filename → message, song, optional coordinates
 ├── scripts/build.js     # photo → JPEG + data.json generator
